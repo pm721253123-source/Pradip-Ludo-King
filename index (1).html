@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#171b35">
+<title>Pradip Ludo King</title>
+<style>
+:root{--bg:#11152b;--panel:#202747;--ink:#fff;--red:#f04452;--green:#19b878;--yellow:#f6c945;--blue:#438cf5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#29345e,#101329 70%);color:var(--ink);font-family:system-ui,Arial,sans-serif;min-height:100vh;padding:14px}
+.wrap{max-width:620px;margin:auto}.top{text-align:center;margin:4px 0 14px}.top h1{font-size:clamp(25px,7vw,38px);margin:0;font-weight:900;letter-spacing:.4px}.top p{margin:4px 0;color:#c5cbea;font-size:13px}
+.panel{background:#202747;border:1px solid #39456f;border-radius:18px;padding:12px;box-shadow:0 12px 30px #0005}
+.info{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.turn{font-weight:800;font-size:15px}.pill{padding:6px 10px;border-radius:99px;background:#111831;font-size:12px;color:#dbe3ff}
+.board{width:min(92vw,500px);aspect-ratio:1;margin:0 auto;background:#f6f2e8;border:5px solid #e3e7f3;border-radius:9px;display:grid;grid-template-columns:repeat(15,1fr);grid-template-rows:repeat(15,1fr);overflow:hidden;position:relative;box-shadow:0 8px 22px #0005}
+.cell{border:1px solid #d8d9df;display:flex;align-items:center;justify-content:center;position:relative}
+.home{grid-column:span 6;grid-row:span 6;display:grid;place-items:center}
+.home.red{background:#f04452}.home.green{background:#19b878}.home.yellow{background:#f6c945}.home.blue{background:#438cf5}
+.homebox{width:68%;height:68%;background:#fff;border:3px solid #ffffffaa;border-radius:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;padding:10px}
+.slot{border-radius:50%;background:#e8e8e8;border:2px solid #c8c8c8;display:grid;place-items:center;color:#222;font-size:12px;font-weight:800}
+.path{background:#fff}.safe:after{content:"★";font-size:clamp(8px,2vw,15px);color:#b3a16a}
+.center{grid-column:7/span 3;grid-row:7/span 3;background:conic-gradient(var(--green) 0 25%,var(--yellow) 0 50%,var(--blue) 0 75%,var(--red) 0);clip-path:polygon(0 0,100% 0,100% 100%,0 100%);display:grid;place-items:center;color:#fff;font-size:clamp(8px,2.4vw,15px);font-weight:900;text-shadow:0 1px 3px #000}
+.token{width:78%;height:78%;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 4px #0006;display:grid;place-items:center;color:#fff;font-size:clamp(9px,2vw,14px);font-weight:900;cursor:pointer;z-index:2}
+.token.red{background:#d92336}.token.green{background:#078b59}.token.yellow{background:#d19c08}.token.blue{background:#2268cf}
+.cell .token{position:absolute}.home .token{position:static;width:90%;height:90%}
+.controls{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.dice{width:66px;height:66px;border:0;border-radius:16px;background:#fff;color:#15192c;font-size:35px;font-weight:900;box-shadow:0 5px 0 #b8bfd2;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}.roll{background:#f6c945;color:#24202a;border:0;border-radius:13px;padding:13px 18px;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 4px 0 #b48d19}
+.message{text-align:center;min-height:42px;margin:10px 0 0;color:#e8edff;font-size:14px}
+.actions{display:flex;justify-content:center;gap:8px;margin-top:10px}.small{background:#35416b;color:#fff;border:1px solid #52618e;padding:9px 13px;border-radius:10px;font-weight:700}
+.legend{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:#d6dcf5}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
+.note{text-align:center;color:#aeb9df;font-size:11px;margin:12px 0 2px}
+@media(max-width:380px){body{padding:8px}.panel{padding:8px}.board{width:96vw}.homebox{gap:4px;padding:6px}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><h1>🎲 PRADIP LUDO KING</h1><p>Classic local multiplayer • 2–4 players</p></header>
+<section class="panel">
+<div class="info"><div class="turn" id="turn">Red player's turn</div><div class="pill" id="status">Roll the dice</div></div>
+<div class="board" id="board"></div>
+<div class="controls"><button class="dice" id="dice" aria-label="Dice">⚀</button><button class="roll" id="roll">ROLL DICE</button></div>
+<div class="message" id="message">Roll a 6 to bring a token out of the base.</div>
+<div class="actions"><button class="small" id="new">New game</button><button class="small" id="players">Players: 4</button></div>
+<div class="legend"><span><i class="dot" style="background:var(--red)"></i>Red</span><span><i class="dot" style="background:var(--green)"></i>Green</span><span><i class="dot" style="background:var(--yellow)"></i>Yellow</span><span><i class="dot" style="background:var(--blue)"></i>Blue</span></div>
+<p class="note">Tap a highlighted token after rolling. First player to finish all 4 tokens wins.</p>
+</section></div>
+<script>
+const colors=['red','green','yellow','blue'], names=['Red','Green','Yellow','Blue'], starts=[0,13,26,39];
+const route=[];
+for(let c=1;c<=6;c++)route.push([6,c]);
+for(let r=5;r>=0;r--)route.push([r,7]);
+for(let r=0;r<=5;r++)route.push([r,8]);
+for(let c=9;c<=14;c++)route.push([6,c]);
+for(let c=14;c>=9;c--)route.push([8,c]);
+for(let r=9;r<=14;r++)route.push([7,r]);
+for(let r=14;r>=9;r--)route.push([8,r]);
+for(let c=5;c>=0;c--)route.push([7,c]);
+/* use a stable 52-cell perimeter path */
+const track=[];
+for(let c=1;c<=6;c++)track.push([6,c]);
+for(let r=5;r>=0;r--)track.push([r,7]);
+for(let r=0;r<=5;r++)track.push([r,8]);
+for(let c=9;c<=14;c++)track.push([6,c]);
+for(let r=7;r<=8;r++){} 
+for(let c=14;c>=9;c--)track.push([8,c]);
+for(let r=9;r<=14;r++)track.push([7,r]);
+for(let r=14;r>=9;r--)track.push([8,r]);
+for(let c=5;c>=0;c--)track.push([7,c]);
+/* Replace with 52 unique cells around the board */
+const ring=[];
+for(let c=1;c<=6;c++)ring.push([6,c]);
+for(let r=5;r>=0;r--)ring.push([r,7]);
+for(let r=0;r<=5;r++)ring.push([r,8]);
+for(let c=9;c<=14;c++)ring.push([6,c]);
+for(let r=7;r<=8;r++)ring.push([r,14]);
+for(let c=13;c>=9;c--)ring.push([8,c]);
+for(let r=9;r<=14;r++)ring.push([r,8]);
+for(let c=7;c>=0;c--)ring.push([14,c]);
+for(let r=13;r>=9;r--)ring.push([8,r]);
+for(let c=5;c>=0;c--)ring.push([6,c]);
+/* Build a clear 52-step loop from a 15x15 perimeter path */
+const loop=[];
+for(let c=1;c<=5;c++)loop.push([6,c]);
+for(let r=5;r>=1;r--)loop.push([r,6]);
+for(let r=0;r<=5;r++)loop.push([r,7]);
+for(let c=8;c<=13;c++)loop.push([6,c]);
+for(let r=7;r<=13;r++)loop.push([r,8]);
+for(let c=7;c>=1;c--)loop.push([14,c]);
+for(let r=13;r>=9;r--)loop.push([r,6]);
+for(let c=5;c>=1;c--)loop.push([8,c]);
+/* use 52 coordinates generated on a conventional Ludo ring */
+const cells=[];
+const add=(r,c)=>cells.push([r,c]);
+[[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],[0,7],[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[6,8],[6,9],[6,10],[6,11],[6,12],[6,13],[6,14],[7,14],[8,14],[8,13],[8,12],[8,11],[8,10],[8,9],[8,8],[9,8],[10,8],[11,8],[12,8],[13,8],[14,8],[14,7],[14,6],[13,6],[12,6],[11,6],[10,6],[9,6],[8,6],[8,5],[8,4],[8,3],[8,2]].forEach(p=>cells.push(p));
+let playerCount=4, current=0, rollValue=null, state=[];
+function fresh(){state=colors.map(()=>Array.from({length:4},()=>-1));current=0;rollValue=null;render();msg('Roll a 6 to bring a token out of the base.');}
+function msg(s){document.getElementById('message').textContent=s;}
+function posFor(player,step){if(step<0)return null;if(step>=52)return null;return (starts[player]+step)%52;}
+function makeCell(r,c,cls='path'){let d=document.createElement('div');d.className='cell '+cls;d.style.gridRow=(r+1);d.style.gridColumn=(c+1);return d;}
+function render(){
+ const b=document.getElementById('board');b.innerHTML='';
+ const homes=[['red',1,1],['green',1,10],['yellow',10,10],['blue',10,1]];
+ homes.forEach(([color,r,c])=>{let h=makeCell(r,c,'home '+color);let box=document.createElement('div');box.className='homebox';for(let i=0;i<4;i++){let s=document.createElement('div');s.className='slot';let p=colors.indexOf(color);let step=state[p]?.[i]??-1;if(step===-1){s.textContent='●';s.style.color='var(--'+color+')'}else{s.textContent='✓'}box.appendChild(s)}h.appendChild(box);b.appendChild(h)});
+ cells.forEach(([r,c],i)=>{let d=makeCell(r,c,'path'+([0,13,26,39].includes(i)?' safe':''));d.dataset.track=i;b.appendChild(d)});
+ let center=makeCell(6,6,'center');center.textContent='HOME';b.appendChild(center);
+ // Tokens in base or on track; tap only when legal
+ state.forEach((arr,p)=>arr.forEach((step,t)=>{
+  let el=document.createElement('button');el.className='token '+colors[p];el.textContent=t+1;el.setAttribute('aria-label',names[p]+' token '+(t+1));
+  let cell;
+  if(step<0){const home= b.querySelectorAll('.home')[p];cell=home.querySelectorAll('.slot')[t];}
+  else if(step<52){let idx=posFor(p,step);cell=b.querySelector('[data-track="'+idx+'"]');}
+  else {cell=b.querySelector('.center');}
+  if(cell){cell.appendChild(el);if(p===current&&rollValue!==null&&legal(p,t)){el.style.outline='3px solid #fff';el.style.transform='scale(1.13)';el.onclick=()=>move(p,t);}}
+ }));
+ document.getElementById('turn').textContent=names[current]+"'s turn";
+ document.getElementById('status').textContent=rollValue===null?'Roll the dice':'Choose a token';
+ document.getElementById('roll').disabled=rollValue!==null;
+ document.getElementById('dice').textContent=rollValue===null?'⚀':['','⚀','⚁','⚂','⚃','⚄','⚅'][rollValue];
+ document.getElementById('players').textContent='Players: '+playerCount;
+}
+function legal(p,t){let s=state[p][t];return s===-1?rollValue===6:s<57&&s+rollValue<=57;}
+function roll(){if(rollValue!==null)return;rollValue=1+Math.floor(Math.random()*6);render();let moves=state[current].some((_,t)=>legal(current,t));if(!moves){msg(names[current]+' rolled '+rollValue+'. No move available.');setTimeout(()=>{let six=rollValue===6;rollValue=null;if(!six)next();render();},850)}else msg(names[current]+' rolled '+rollValue+'. Tap a glowing token.');}
+function move(p,t){if(!legal(p,t))return;if(state[p][t]===-1)state[p][t]=0;else state[p][t]+=rollValue;
+ const landed=state[p][t];if(landed<52){let idx=posFor(p,landed);if(![0,13,26,39].includes(idx)){for(let op=0;op<playerCount;op++){if(op===p)continue;state[op].forEach((s,j)=>{if(s>=0&&s<52&&posFor(op,s)===idx)state[op][j]=-1;});}}}
+ let won=state[p].every(s=>s===57);let extra=rollValue===6||landed===57;rollValue=null;
+ if(won){msg('🏆 '+names[p]+' wins! Congratulations!');document.getElementById('roll').disabled=true;return;}
+ if(extra)msg(names[p]+' gets another turn!');else next();
+ render();
+}
+function next(){current=(current+1)%playerCount;rollValue=null;}
+document.getElementById('roll').onclick=roll;
+document.getElementById('dice').onclick=roll;
+document.getElementById('new').onclick=fresh;
+document.getElementById('players').onclick=()=>{playerCount=playerCount===4?2:playerCount+1;fresh();};
+fresh();
+</script></body></html>
